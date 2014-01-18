@@ -3,7 +3,6 @@ Client = require('../index').Client
 aws_secret = require './secret'
 
 ddb = new Client aws_secret
-class Product extends Model
 
 schemas = [ {
   TableName: 'test_products'
@@ -22,16 +21,20 @@ schemas = [ {
     WriteCapacityUnits: 1
 } ]
 
-schema_test = ->
+schema_test = (cb) ->
   ddb.deleteTables schemas, (err) ->
     ddb.waitTable schemas[0], false, (err) ->
       ddb.createTables schemas, (err) ->
         ddb.waitTable schemas[0], true, (err) ->
           ddb.listTables (err, res) ->
-            model_test()
+            cb.call @
+
+class Product extends Model
+  table: 'test_products'
+  keys: ['name', 'created_at']
 
 model_test = ->
-  product = new Product ddb, "test_products", ["name", "created_at"] 
+  product = new Product ddb
   product.create {name: "iphone", created_at: new Date().getTime()}, (err) ->
     throw err if err
     product.create {name: "iphone", created_at: new Date().getTime()}, (err) ->
@@ -40,4 +43,4 @@ model_test = ->
         throw err if err
         console.log res
 
-schema_test()
+schema_test model_test

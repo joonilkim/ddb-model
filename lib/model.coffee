@@ -1,5 +1,6 @@
 class Model
-  constructor: (@ddb, @table, @keys, @opts) ->
+  #constructor: (@ddb, @table, @keys, @opts) ->
+  constructor: (@ddb) ->
   create: (data, cb) ->
     @ddb.put @table, data, @keys, {}, cb
   query: (hash_val, n, cb) ->

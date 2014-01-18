@@ -54,14 +54,17 @@ ddb.deleteTables schemas, (err) ->
 Model = require('ddb-model').model
 Client = require('ddb-model').client
 
-class Product extends Model
-
 ddb = new Client
   accessKeyId: ''
   secretAccessKey: ''
   region: ''
   maxRetries: 3
-product = new Product ddb, "test_products", ["name", "created_at"] 
+
+class Product extends Model
+  table: 'test_products'
+  keys: ['name', 'created_at']
+
+product = new Product ddb
 product.create {name: "iphone", created_at: new Date().getTime()}, (err) ->
   throw err if err
   product.create {name: "iphone", created_at: new Date().getTime()}, (err) ->
