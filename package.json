@@ -1,0 +1,26 @@
+{
+  "name": "ddb-model",
+  "version": "0.1.0",
+  "description": "simple dynamodb client",
+  "homepage": "http://github.com/joonilkim/ddb-model",
+  "author": {
+    "name": "Joonil Kim",
+    "email": "somewehr@gmail.com"
+  },
+  "main": "index",
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "coffee-script": "~1.6.3"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/joonilkim/ddb-model"
+  },
+  "bugs": {
+    "url": "http://github.com/joonilkim/ddb-model/issues"
+  },
+  "scripts": {
+    "test": "mocha --compilers coffee:coffee-script ./spec"
+  }
+}
