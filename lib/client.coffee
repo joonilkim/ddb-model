@@ -199,12 +199,19 @@ class Client
           res.res[tb] = attrs.map (attr) -> ddb2o(attr)
         cb(null, res)
   timeout: (ms, cb) -> setTimeout cb, ms
+  _dup: (o) -> JSON.parse JSON.stringify(o)
+  waitTables: (schemas, exists, cb) ->
+    return cb.call @ if schemas.length == 0
+    self = @
+    @waitTable schemas[0], exists, (err) -> 
+      targets = err && schemas || self._dup(schemas).slice(1)
+      self.waitTables(targets, exists, cb)
   waitTable: (schema, exists, cb) ->
     self = @
     @ddb.describeTable TableName: schema.TableName, (err, res) ->
       process.stdout.write '.'
       if exists && res.Table.TableStatus == 'ACTIVE' || err
-        cb.call self, err
+        cb.call self, null
       else
         self.timeout 2000, -> self.waitTable(schema, exists, cb)
   deleteTables: (schemas, cb) ->

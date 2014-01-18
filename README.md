@@ -42,9 +42,9 @@ schemas = [ {
 } ]
 
 ddb.deleteTables schemas, (err) ->
-  ddb.waitTable schemas[0], false, (err) ->
+  ddb.waitTables schemas, false, (err) ->
     ddb.createTables schemas, (err) ->
-      ddb.waitTable schemas[0], true, (err) ->
+      ddb.waitTables schemas, true, (err) ->
         ddb.listTables (err, res) ->
           console.log res
 

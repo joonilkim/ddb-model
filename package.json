@@ -22,6 +22,6 @@
     "url": "http://github.com/joonilkim/ddb-model/issues"
   },
   "scripts": {
-    "test": "mocha --compilers coffee:coffee-script ./spec"
+    "test": "coffee spec/model-test.coffee"
   }
 }
