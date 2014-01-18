@@ -1,7 +1,6 @@
 aws = require 'aws-sdk'
-util = require './util'
 
-class DDB
+class Client
   constructor: (cred) ->
     aws.config.update cred
     @ddb = new aws.DynamoDB
@@ -15,7 +14,7 @@ class DDB
     params.Expected = {}
     for k in keys
       params.Expected[k] = {Exists: false}
-    util.merge params, ops
+    merge params, ops
     @ddb.putItem params, (err, data) ->
       if err
         cb err
@@ -85,7 +84,7 @@ class DDB
     params = {}
     params.TableName = table
     params.Key = o2ddb key
-    util.merge params, ops
+    merge params, ops
     @ddb.deleteItem params, (err, data) ->
       if err
         cb err
@@ -109,7 +108,7 @@ class DDB
       params.AttributeUpdates[k] =
         Value: ddbtype(v)
         Action: 'PUT'
-    util.merge params, ops
+    merge params, ops
     @ddb.updateItem params, (err, data) ->
       if err
         cb err
@@ -128,7 +127,7 @@ class DDB
       params.AttributeUpdates[k] =
         Value: ddbtype(v)
         Action: 'ADD'
-    util.merge params, ops
+    merge params, ops
     @update table, key, {}, params, cb
 
   # usage: add_set(tb, {xx:1}, {yy:[a]})
@@ -140,7 +139,7 @@ class DDB
       params.AttributeUpdates[k] =
         Value: ddbtype(Array.isArray(v) && v || [v])
         Action: 'ADD'
-    util.merge params, ops
+    merge params, ops
     @update table, key, {}, params, cb
 
   # usage: del_set(tb, {xx:1}, {yy:[a]})
@@ -152,7 +151,7 @@ class DDB
       params.AttributeUpdates[k] =
         Value: ddbtype(Array.isArray(v) && v || [v])
         Action: 'DELETE'
-    util.merge params, ops
+    merge params, ops
     @update table, key, {}, params, cb
 
   # RequestItems: {tb1: [PutRequest: {Item: {xx: {'S':'a'}}}, DelRequest: ...]}
@@ -163,7 +162,7 @@ class DDB
     ri = params.RequestItems
     for tb, data of item
       ri[tb] = data.map (d) -> {PutRequest: {Item: o2ddb(d)} }
-    util.merge params, ops
+    merge params, ops
     @ddb.batchWriteItem params, cb
 
   # usage: mdel {tb1: [{xx: 'a', yy:1},{xx: 'b'}}], tb2: [...]}
@@ -173,7 +172,7 @@ class DDB
     ri = params.RequestItems
     for tb, data of item
       ri[tb] = data.map (d) -> {DeleteRequest : {Key: o2ddb(d)} }
-    util.merge params, ops
+    merge params, ops
     @ddb.batchWriteItem params, cb
 
   # RequestItems: {tb1: {Keys: [], AttributesToGet: [], ConsistentRead: true}
@@ -199,8 +198,55 @@ class DDB
         for tb, attrs of data.Responses
           res.res[tb] = attrs.map (attr) -> ddb2o(attr)
         cb(null, res)
+  timeout: (ms, cb) -> setTimeout cb, ms
+  waitTable: (schema, exists, cb) ->
+    self = @
+    @ddb.describeTable TableName: schema.TableName, (err, res) ->
+      process.stdout.write '.'
+      if exists && res.Table.TableStatus == 'ACTIVE' || err
+        cb.call self, err
+      else
+        self.timeout 2000, -> self.waitTable(schema, exists, cb)
+  deleteTables: (schemas, cb) ->
+    finished = 0
+    last_err = null
+    self = @
+    for s in schemas
+      @ddb.deleteTable TableName: s.TableName, (err, res) ->
+        finished++
+        last_err = err if err
+        cb.call self, last_err if finished == schemas.length
+  createTables: (schemas, cb) ->
+    finished = 0
+    last_err = null
+    self = @
+    for s in schemas
+      x =
+        TableName: s.TableName
+        AttributeDefinitions: []
+        KeySchema: []
+      x.ProvisionedThroughput = s.ProvisionedThroughput || 
+        { ReadCapacityUnits: 1, WriteCapacityUnits: 1 }
+      for attr in s.Attributes
+        x.AttributeDefinitions.push 
+          AttributeName: attr.AttributeName
+          AttributeType: attr.AttributeType
+        x.KeySchema.push
+          AttributeName: attr.AttributeName
+          KeyType: attr.KeyType
 
-module.exports = DDB
+      @ddb.createTable x, (err, res) ->
+        finished++
+        last_err = err if err
+        cb.call self, err if finished == schemas.length
+  listTables: (cb) ->
+    @ddb.listTables cb
+
+merge = (o1, o2) ->
+  return o1 unless o2
+  for k,v of o2
+    o1[k] = v
+  o1
 
 # {xx: {'EQ': ['a']}} =>
 # {xx: {AttributeValueList: [{'S':'a'}], ComparisonOperator: 'EQ'}}
@@ -245,3 +291,6 @@ ddb2o = (item) ->
     else if v.NS
       v.NS.map (x) -> parseFloat x
   res
+
+module.exports = Client
+

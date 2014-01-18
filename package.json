@@ -10,7 +10,8 @@
   "main": "index",
   "readmeFilename": "README.md",
   "dependencies": {
-    "coffee-script": "~1.6.3"
+    "coffee-script": "~1.6.3",
+    "aws-sdk": "~2.0.0-rc8"
   },
   "devDependencies": {},
   "repository": {

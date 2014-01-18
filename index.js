@@ -1,3 +1,4 @@
 require('coffee-script');
 
-module.exports = require('./lib/index');
+module.exports.Model = require('./lib/model');
+module.exports.Client = require('./lib/client');
