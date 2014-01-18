@@ -1,21 +1,17 @@
 
-- - -
-
 ## Install
 
 ```shell
 npm install git+https://github.com/joonilkim/ddb-model.git --save
 ```
 
-### Test
+## Test
 
 ```shell
 npm run-script test
 or
 npm test 
 ```
-
-- - -
 
 ## Usage
 
