@@ -22,18 +22,20 @@ schemas = [ {
 } ]
 
 schema_test = (cb) ->
+  ddb.createTables schemas, (err) ->
+    ddb.waitTables schemas, true, (err) ->
+      ddb.listTables (err, res) ->
+        cb?.call @
+
+clear_schemas = (cb) ->
   ddb.deleteTables schemas, (err) ->
-    ddb.waitTables schemas, false, (err) ->
-      ddb.createTables schemas, (err) ->
-        ddb.waitTables schemas, true, (err) ->
-          ddb.listTables (err, res) ->
-            cb.call @
+    cb?.call @
 
 class Product extends Model
   table: 'test_products'
   keys: ['name', 'created_at']
 
-model_test = ->
+model_test = (cb) ->
   product = new Product ddb
   product.create {name: "iphone", created_at: new Date().getTime()}, (err) ->
     throw err if err
@@ -42,5 +44,9 @@ model_test = ->
       product.query "iphone", (err, res) ->
         throw err if err
         console.log res
+        cb?.call @
 
-schema_test model_test
+schema_test ->
+  model_test ->
+    clear_schemas()
+
