@@ -16,7 +16,7 @@ npm test
 ## Usage
 
 ```js
-Client = require('ddb-model').client
+Client = require('ddb-model').Client
 
 ddb = new Client
   accessKeyId: ''
@@ -51,8 +51,8 @@ ddb.deleteTables schemas, (err) ->
 ```
 
 ```js
-Model = require('ddb-model').model
-Client = require('ddb-model').client
+Model = require('ddb-model').Model
+Client = require('ddb-model').Client
 
 ddb = new Client
   accessKeyId: ''
