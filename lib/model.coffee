@@ -64,19 +64,22 @@ class Model
   inc: (hash_val, range_val, field, cb) ->
     @_validate_args null, hash_val, range_val, cb
     cond = @_get_cond null, hash_val, range_val
-    field = range_val if typeof field == 'function'
+    if typeof field == 'function'
+      [field, cb] = [range_val, field]
     opts = {}
     opts[field] = 1
     @ddb.incr @table, cond, opts, cb
   putx: (hash_val, range_val, data, cb) -> 
     @_validate_args null, hash_val, range_val, cb
     cond = @_get_cond null, hash_val, range_val
-    data = range_val if typeof data == 'function'
+    if typeof data == 'function'
+      [data, cb] = [range_val, data]
     @ddb.add_set @table, cond, data, cb
   delx: (hash_val, range_val, data, cb) -> 
     @_validate_args null, hash_val, range_val, cb
     cond = @_get_cond null, hash_val, range_val
-    data = range_val if typeof data == 'function'
+    if typeof data == 'function'
+      [data, cb] = [range_val, data]
     @ddb.del_set @table, cond, data, cb
 
 
