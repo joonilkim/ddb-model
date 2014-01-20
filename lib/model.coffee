@@ -60,7 +60,7 @@ class Model
   update: (hash_val, range_val, data, cb) ->
     @_validate_args null, hash_val, range_val, cb
     cond = @_get_cond null, hash_val, range_val
-    @ddb.update @table, cond, data, cb || range_val
+    @ddb.update @table, cond, data, {}, cb || range_val
   inc: (hash_val, range_val, field, cb) ->
     @_validate_args null, hash_val, range_val, cb
     cond = @_get_cond null, hash_val, range_val
@@ -68,19 +68,19 @@ class Model
       [field, cb] = [range_val, field]
     opts = {}
     opts[field] = 1
-    @ddb.incr @table, cond, opts, cb
+    @ddb.incr @table, cond, opts, {}, cb
   putx: (hash_val, range_val, data, cb) -> 
     @_validate_args null, hash_val, range_val, cb
     cond = @_get_cond null, hash_val, range_val
     if typeof data == 'function'
       [data, cb] = [range_val, data]
-    @ddb.add_set @table, cond, data, cb
+    @ddb.add_set @table, cond, data, {}, cb
   delx: (hash_val, range_val, data, cb) -> 
     @_validate_args null, hash_val, range_val, cb
     cond = @_get_cond null, hash_val, range_val
     if typeof data == 'function'
       [data, cb] = [range_val, data]
-    @ddb.del_set @table, cond, data, cb
+    @ddb.del_set @table, cond, data, {}, cb
 
 
 module.exports = Model
