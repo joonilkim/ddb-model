@@ -52,6 +52,7 @@ class Client
     params.TableName = table
     params.KeyConditions = o2ddb_cond(cond)
     params.AttributesToGet = attrs if attrs
+    params.IndexName = ops.index if ops.index
     params.Limit = ops.limit if ops.limit
     params.ExclusiveStartKey = ops.start_key if ops.start_key
     params.ScanIndexForward = ops.asc if ops.asc
@@ -210,7 +211,8 @@ class Client
     self = @
     @ddb.describeTable TableName: schema.TableName, (err, res) ->
       process.stdout.write '.'
-      if exists && res.Table.TableStatus == 'ACTIVE' || err
+      throw err if exists && err
+      if !exists && err || res.Table.TableStatus == 'ACTIVE'
         cb.call self, null
       else
         self.timeout 2000, -> self.waitTable(schema, exists, cb)
@@ -232,15 +234,18 @@ class Client
         TableName: s.TableName
         AttributeDefinitions: []
         KeySchema: []
+        GlobalSecondaryIndexes: s.GlobalSecondaryIndexes
+        LocalSecondaryIndexes: s.LocalSecondaryIndexes
       x.ProvisionedThroughput = s.ProvisionedThroughput || 
         { ReadCapacityUnits: 1, WriteCapacityUnits: 1 }
       for attr in s.Attributes
         x.AttributeDefinitions.push 
           AttributeName: attr.AttributeName
           AttributeType: attr.AttributeType
-        x.KeySchema.push
-          AttributeName: attr.AttributeName
-          KeyType: attr.KeyType
+        if attr.KeyType
+          x.KeySchema.push
+            AttributeName: attr.AttributeName
+            KeyType: attr.KeyType
 
       @ddb.createTable x, (err, res) ->
         finished++

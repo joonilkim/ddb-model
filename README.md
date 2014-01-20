@@ -34,8 +34,42 @@ schemas = [ {
     { AttributeName: 'created_at',\
       AttributeType: 'N',\
       KeyType: 'RANGE'
+    },
+    { AttributeName: 'location',\
+      AttributeType: 'S'
     }
-  ]
+  ],
+  GlobalSecondaryIndexes: [ {
+    IndexName: 'gsi0' 
+    KeySchema: [ 
+      {
+        AttributeName: 'location'
+        KeyType: 'HASH'
+      }
+    ]
+    Projection:
+      ProjectionType: 'INCLUDE'
+      NonKeyAttributes: ['name', 'created_at']
+    ProvisionedThroughput:
+      ReadCapacityUnits: 1
+      WriteCapacityUnits: 1
+  } ],
+  LocalSecondaryIndexes: [ {
+    IndexName: 'lsi0' 
+    KeySchema: [ 
+      {
+        AttributeName: 'name'
+        KeyType: 'HASH'
+      },
+      {
+        AttributeName: 'location'
+        KeyType: 'RANGE'
+      }
+    ]
+    Projection:
+      ProjectionType: 'INCLUDE'
+      NonKeyAttributes: ['created_at']
+  } ],
   ProvisionedThroughput:
     ReadCapacityUnits: 1
     WriteCapacityUnits: 1
@@ -63,14 +97,23 @@ ddb = new Client
 class Product extends Model
   table: 'test_products'
   keys: ['name', 'created_at']
+  indexes: 
+    gsi0: ['location']
+    lsi0: ['name', 'location']
 
+now = -> new Date().getTime()
 product = new Product ddb
-product.create {name: "iphone", created_at: new Date().getTime()}, (err) ->
+product.create {name: "iphone", created_at: now(), location: 'seoul'}, (err) ->
   throw err if err
-  product.create {name: "iphone", created_at: new Date().getTime()}, (err) ->
+  product.create {name: "iphone", created_at: now(), location: 'busan'}, (err) ->
     throw err if err
     product.query "iphone", (err, res) ->
       throw err if err
       console.log res
+      product.get_by "gsi0", "busan", (err, res) ->
+        throw err if err
+        console.log res
+        cb?.call @
+
 ```
   

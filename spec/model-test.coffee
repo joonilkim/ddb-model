@@ -14,8 +14,42 @@ schemas = [ {
     { AttributeName: 'created_at',\
       AttributeType: 'N',\
       KeyType: 'RANGE'
+    },
+    { AttributeName: 'location',\
+      AttributeType: 'S'
     }
-  ]
+  ],
+  GlobalSecondaryIndexes: [ {
+    IndexName: 'gsi0' 
+    KeySchema: [ 
+      {
+        AttributeName: 'location'
+        KeyType: 'HASH'
+      }
+    ]
+    Projection:
+      ProjectionType: 'INCLUDE'
+      NonKeyAttributes: ['name', 'created_at']
+    ProvisionedThroughput:
+      ReadCapacityUnits: 1
+      WriteCapacityUnits: 1
+  } ],
+  LocalSecondaryIndexes: [ {
+    IndexName: 'lsi0' 
+    KeySchema: [ 
+      {
+        AttributeName: 'name'
+        KeyType: 'HASH'
+      },
+      {
+        AttributeName: 'location'
+        KeyType: 'RANGE'
+      }
+    ]
+    Projection:
+      ProjectionType: 'INCLUDE'
+      NonKeyAttributes: ['created_at']
+  } ],
   ProvisionedThroughput:
     ReadCapacityUnits: 1
     WriteCapacityUnits: 1
@@ -23,8 +57,11 @@ schemas = [ {
 
 schema_test = (cb) ->
   ddb.createTables schemas, (err) ->
+    throw err if err
     ddb.waitTables schemas, true, (err) ->
+      throw err if err
       ddb.listTables (err, res) ->
+        throw err if err
         cb?.call @
 
 clear_schemas = (cb) ->
@@ -34,19 +71,48 @@ clear_schemas = (cb) ->
 class Product extends Model
   table: 'test_products'
   keys: ['name', 'created_at']
+  indexes: 
+    gsi0: ['location']
+    lsi0: ['name', 'location']
 
-model_test = (cb) ->
-  product = new Product ddb
-  product.create {name: "iphone", created_at: new Date().getTime()}, (err) ->
+product = new Product ddb
+
+prod0 =
+  name: 'iphone'
+  created_at: new Date().getTime()
+  location: 'seoul'
+  
+prod1 =
+  name: 'iphone'
+  created_at: new Date().getTime()+1
+  location: 'busan'
+
+prod2 =
+  name: 'iphone'
+  created_at: new Date().getTime()+2
+  location: 'seoul'
+
+
+insert_test = (cb) ->
+  product.create prod0, (err) ->
     throw err if err
-    product.create {name: "iphone", created_at: new Date().getTime()}, (err) ->
+    product.create prod1, (err) ->
       throw err if err
-      product.query "iphone", (err, res) ->
+      product.create prod2, (err) ->
         throw err if err
-        console.log res
-        cb?.call @
+        cb()
+
+query_test = (cb) ->
+  product.query "iphone", (err, res) ->
+    throw err if err
+    console.log res
+    product.get_by "gsi0", "busan", (err, res) ->
+      throw err if err
+      console.log res
+      cb?.call @
 
 schema_test ->
-  model_test ->
-    clear_schemas()
+  insert_test ->
+    query_test ->
+      clear_schemas()
 
