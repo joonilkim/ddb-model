@@ -68,7 +68,8 @@ class Model
       [field, cb] = [range_val, field]
     opts = {}
     opts[field] = 1
-    @ddb.incr @table, cond, opts, {}, cb
+    @ddb.incr @table, cond, opts, {}, (err, res) ->
+      cb err, res?[field] || null
   putx: (hash_val, range_val, data, cb) -> 
     @_validate_args null, hash_val, range_val, cb
     cond = @_get_cond null, hash_val, range_val
