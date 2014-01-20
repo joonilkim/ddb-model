@@ -234,8 +234,10 @@ class Client
         TableName: s.TableName
         AttributeDefinitions: []
         KeySchema: []
-        GlobalSecondaryIndexes: s.GlobalSecondaryIndexes
-        LocalSecondaryIndexes: s.LocalSecondaryIndexes
+      if s.GlobalSecondaryIndexes
+        x.GlobalSecondaryIndexes = s.GlobalSecondaryIndexes
+      if s.LocalSecondaryIndexes
+        x.LocalSecondaryIndexes = s.LocalSecondaryIndexes
       x.ProvisionedThroughput = s.ProvisionedThroughput || 
         { ReadCapacityUnits: 1, WriteCapacityUnits: 1 }
       for attr in s.Attributes
