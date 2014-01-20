@@ -56,7 +56,7 @@ class Model
   del: (hash_val, range_val, cb) ->
     @_validate_args null, hash_val, range_val, cb
     cond = @_get_cond null, hash_val, range_val
-    @ddb.del @table, cond, null, false, cb || range_val
+    @ddb.del @table, cond, null, cb || range_val
   update: (hash_val, range_val, data, cb) ->
     @_validate_args null, hash_val, range_val, cb
     cond = @_get_cond null, hash_val, range_val
