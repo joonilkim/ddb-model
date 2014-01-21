@@ -39,8 +39,7 @@ class Client
       if err
         cb err
       else
-        cb null, if data.Item then \
-          ddb2o data.Item else {}
+        cb null, data.Item && ddb2o data.Item || null
 
   count: (table, cond, ops, cb) ->
     ops.Select = 'COUNT'
