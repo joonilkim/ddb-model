@@ -60,7 +60,9 @@ class Model
   update: (hash_val, range_val, data, cb) ->
     @_validate_args null, hash_val, range_val, cb
     cond = @_get_cond null, hash_val, range_val
-    @ddb.update @table, cond, data, {}, cb || range_val
+    if typeof data == 'function'
+      [data, cb] = [range_val, data]
+    @ddb.update @table, cond, data, {}, cb
   inc: (hash_val, range_val, field, cb) ->
     @_validate_args null, hash_val, range_val, cb
     cond = @_get_cond null, hash_val, range_val
