@@ -95,9 +95,9 @@ class Model
         _keys.push @_get_cond null, _hash, v
     @ddb.mdel items, {}, cb
   # [{xx: 'a', yy:1},{xx: 'b'}}]
-  mput: (vals, cb) ->
-    items = {}
-    items[@table] = vals
-    @ddb.mput items, {}, cb
+  batch: (puts, dels, cb) ->
+    (toputs = {})[@table] = puts
+    (todels = {})[@table] = dels
+    @ddb.batch toputs, todels, cb
 
 module.exports = Model

@@ -175,6 +175,21 @@ class Client
     merge params, ops
     @ddb.batchWriteItem params, cb
 
+  # toputs: tb: [{xx:1,yy:2}], tb2: []
+  # todels: tb: [{xx:1,yy:2}], tb2: []
+  batch: (puts, dels, ops, cb) ->
+    params = {RequestItems: {}}
+    ri = params.RequestItems
+    for tb, data of toputs
+      for d in data
+        (ri[tb] ||= []).push {PutRequest : {Key: o2ddb(d)} }
+    for tb, data of todels
+      for d in data
+        (ri[tb] ||= []).push {DeleteRequest : {Key: o2ddb(d)} }
+    merge params, ops
+    @ddb.batchWriteItem params, cb
+    
+
   # RequestItems: {tb1: {Keys: [], AttributesToGet: [], ConsistentRead: true}
   # usage: {tb1: {keys: [{xx:1}], attr: [xx,yy], consistent: true} }
   # if has data.UnprocessedKeys , do mget(null, data.UnprocessedKeys, cb)
