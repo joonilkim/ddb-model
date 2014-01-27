@@ -17,9 +17,9 @@ class Client
     merge params, ops
     @ddb.putItem params, (err, data) ->
       if err
-        cb err
+        cb? err
       else
-        cb null, if data.Attributes then \
+        cb? null, if data.Attributes then \
           ddb2o data.Attributes else {}
 
   # insert if not exist, update if exist
@@ -37,9 +37,9 @@ class Client
     params.ConsistentRead = true if consistent
     @ddb.getItem params, (err, data) ->
       if err
-        cb err
+        cb? err
       else
-        cb null, data.Item && ddb2o data.Item || null
+        cb? null, data.Item && ddb2o data.Item || null
 
   count: (table, cond, ops, cb) ->
     ops.Select = 'COUNT'
@@ -58,9 +58,9 @@ class Client
     params.ConsistentRead = ops.consistent if ops.consistent
     @ddb.query params, (err, data) ->
       if err
-        cb err
+        cb? err
       else
-        cb null, data.Items.map (x) -> ddb2o(x)
+        cb? null, data.Items.map (x) -> ddb2o(x)
 
   scan_count: (table, cond, ops, cb) ->
     ops.Select = 'COUNT'
@@ -76,9 +76,9 @@ class Client
     params.ExclusiveStartKey = ops.start_key if ops.start_key
     @ddb.scan params, (err, data) ->
       if err
-        cb err
+        cb? err
       else
-        cb null, data.Items.map (x) -> ddb2o(x)
+        cb? null, data.Items.map (x) -> ddb2o(x)
 
   del: (table, key, ops, cb) ->
     params = {}
@@ -87,9 +87,9 @@ class Client
     merge params, ops
     @ddb.deleteItem params, (err, data) ->
       if err
-        cb err
+        cb? err
       else
-        cb null, if data.Attributes then \
+        cb? null, if data.Attributes then \
           ddb2o data.Attributes else {}
 
   # update if exist, error if not exist
@@ -111,9 +111,9 @@ class Client
     merge params, ops
     @ddb.updateItem params, (err, data) ->
       if err
-        cb err
+        cb? err
       else
-        cb null, if data.Attributes then \
+        cb? null, if data.Attributes then \
           ddb2o data.Attributes else {}
 
   # usage: incr(tb, {xx:1}, {yy:-1})
@@ -190,18 +190,18 @@ class Client
       ri[tb].ConsistentRead = data.consistent if data.consistent
     @ddb.batchGetItem params, (err, data) ->
       if err
-        cb(err)
+        cb? err
       else
         res =
           UnprocessedKeys: data.UnprocessedKeys
           res: {}
         for tb, attrs of data.Responses
           res.res[tb] = attrs.map (attr) -> ddb2o(attr)
-        cb(null, res)
+        cb? null, res
   timeout: (ms, cb) -> setTimeout cb, ms
   _dup: (o) -> JSON.parse JSON.stringify(o)
   waitTables: (schemas, exists, cb) ->
-    return cb.call @ if schemas.length == 0
+    return cb?.call @ if schemas.length == 0
     self = @
     @waitTable schemas[0], exists, (err) -> 
       targets = err && schemas || self._dup(schemas).slice(1)
@@ -212,7 +212,7 @@ class Client
       process.stdout.write '.'
       throw err if exists && err
       if !exists && err || res.Table.TableStatus == 'ACTIVE'
-        cb.call self, null
+        cb?.call self, null
       else
         self.timeout 2000, -> self.waitTable(schema, exists, cb)
   deleteTables: (schemas, cb) ->
@@ -223,7 +223,7 @@ class Client
       @ddb.deleteTable TableName: s.TableName, (err, res) ->
         finished++
         last_err = err if err
-        cb.call self, last_err if finished == schemas.length
+        cb?.call self, last_err if finished == schemas.length
   createTables: (schemas, cb) ->
     finished = 0
     last_err = null
@@ -251,7 +251,7 @@ class Client
       @ddb.createTable x, (err, res) ->
         finished++
         last_err = err if err
-        cb.call self, err if finished == schemas.length
+        cb?.call self, err if finished == schemas.length
   listTables: (cb) ->
     @ddb.listTables cb
 
