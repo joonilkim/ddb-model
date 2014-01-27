@@ -84,6 +84,17 @@ class Model
     if typeof data == 'function'
       [data, cb] = [range_val, data]
     @ddb.del_set @table, cond, data, {}, cb
+  mdel: (hash_val, range_vals, cb) ->
+    if typeof range_vals == 'function'
+      @del hash_val, cb
+      return
+    unless Array.isArray range_vals
+      throw new Error "TypeError: #{range_vals}" 
 
+    conds = {}
+    conds[@table] = _keys = []
+    for v in range_vals
+      _keys.push @_get_cond null, hash_val, v
+    @ddb.mdel conds, {}, cb
 
 module.exports = Model
