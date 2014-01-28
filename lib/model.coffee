@@ -120,15 +120,13 @@ class Model
     if typeof data == 'function'
       [data, cb] = [range_val, data]
     @ddb.del_set @table, cond, data, {}, cb
-  # {hashval: [range_val...]}
-  mdel: (vals, cb) ->
+  mdel: (hash_val, range_vals, cb) ->
+    unless Array.isArray range_vals
+      throw new Error "TypeError: range should be array" 
     items = {}
     items[@table] = _keys = []
-    for _hash, _ranges of vals
-      unless Array.isArray _ranges
-        throw new Error "TypeError: range should be array" 
-      for v in _ranges
-        _keys.push @_get_cond null, _hash, v
+    for v of range_vals
+      _keys.push @_get_cond null, hash_val, v
     @ddb.mdel items, {}, cb
   # [{xx: 'a', yy:1},{xx: 'b'}}]
   batch: (puts, dels, cb) ->
