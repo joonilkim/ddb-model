@@ -198,7 +198,8 @@ class Client
       if err
         cb?.call self, err
       else if res.UnprocessedItems
-        process.nextTick self.ddb.batchWriteItem(res.UnprocessedItems, cb)
+        params = RequestItems: res.UnprocessedItems
+        process.nextTick self.ddb.batchWriteItem(params, cb)
       else
         cb?.call self, null, res
     
