@@ -182,7 +182,7 @@ class Client
     ri = params.RequestItems
     for tb, data of toputs
       for d in data
-        (ri[tb] ||= []).push {PutRequest : {Key: o2ddb(d)} }
+        (ri[tb] ||= []).push {PutRequest : {Item: o2ddb(d)} }
     for tb, data of todels
       for d in data
         (ri[tb] ||= []).push {DeleteRequest : {Key: o2ddb(d)} }

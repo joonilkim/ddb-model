@@ -132,6 +132,6 @@ class Model
   batch: (puts, dels, cb) ->
     (toputs = {})[@table] = puts
     (todels = {})[@table] = dels
-    @ddb.batch toputs, todels, cb
+    @ddb.batch toputs, todels, {}, cb
 
 module.exports = Model
