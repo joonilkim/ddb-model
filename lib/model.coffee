@@ -64,8 +64,6 @@ class Model
     keys = index || @keys
     if keys.length == 1 && cb
       throw new Error "Hash key is required only"
-    if keys.length == 2 && typeof cb != 'function'
-      throw new Error "No range key is specified"
   _get_cond: (index, hash_val, range_val) ->
     keys = index || @keys
     cond = {}
