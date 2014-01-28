@@ -79,16 +79,18 @@ class Model
     opts = index: index_name, limit: 1
     self = @
     @ddb.query @table, cond, null, opts, (err, data) ->
-      cb ||= range_val
+      cb = range_val if typeof range_val == 'function'
       cb?.call self, err, data?[0] || null
   get: (hash_val, range_val, cb) ->
     @_validate_args null, hash_val, range_val, cb
     cond = @_get_cond null, hash_val, range_val
-    @ddb.get @table, cond, null, false, cb || range_val
+    cb = range_val if typeof range_val == 'function'
+    @ddb.get @table, cond, null, false, cb
   del: (hash_val, range_val, cb) ->
     @_validate_args null, hash_val, range_val, cb
     cond = @_get_cond null, hash_val, range_val
-    @ddb.del @table, cond, null, cb || range_val
+    cb = range_val if typeof range_val == 'function'
+    @ddb.del @table, cond, null, cb
   update: (hash_val, range_val, data, cb) ->
     @_validate_args null, hash_val, range_val, cb
     cond = @_get_cond null, hash_val, range_val
@@ -104,6 +106,7 @@ class Model
     opts[field] = 1
     self = @
     @ddb.incr @table, cond, opts, {}, (err, res) ->
+      cb = field if typeof field == 'function'
       cb?.call self, err, res?[field] || null
   putx: (hash_val, range_val, data, cb) -> 
     @_validate_args null, hash_val, range_val, cb
