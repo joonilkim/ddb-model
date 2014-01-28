@@ -15,8 +15,7 @@ class Model
     cond = {}
     cond[index[0]] = {EQ: [hash_val]}
     opts = index: index_name, limit: (n || -1), desc: desc
-    @ddb.query @table, cond, null, opts, (err, data) ->
-      cb?(err, data?[0] || null)
+    @ddb.query @table, cond, null, opts, cb
   query_before_by: (index_name, hash_val, range_val, n, desc, cb) ->
     if typeof desc == 'function'
       cb = desc; desc = false
@@ -25,8 +24,7 @@ class Model
     cond[index[0]] = {EQ: [hash_val]}
     cond[index[1]] = {LT: [range_val]}
     opts = index: index_name, limit: (n || -1), desc: desc
-    @ddb.query @table, cond, null, opts, (err, data) ->
-      cb?(err, data?[0] || null)
+    @ddb.query @table, cond, null, opts, cb
   query_after_by: (index_name, hash_val, range_val, n, desc, cb) ->
     if typeof desc == 'function'
       cb = desc; desc = false
@@ -35,8 +33,7 @@ class Model
     cond[index[0]] = {EQ: [hash_val]}
     cond[index[1]] = {GT: [range_val]}
     opts = index: index_name, limit: (n || -1), desc: desc
-    @ddb.query @table, cond, null, opts, (err, data) ->
-      cb?(err, data?[0] || null)
+    @ddb.query @table, cond, null, opts, cb
   query_before: (hash_val, range_val, n, desc, cb) ->
     if typeof desc == 'function'
       cb = desc; desc = false
@@ -84,7 +81,7 @@ class Model
     opts = index: index_name, limit: 1
     @ddb.query @table, cond, null, opts, (err, data) ->
       cb ||= range_val
-      cb err, data?[0] || null
+      cb?.call self, err, data?[0] || null
   get: (hash_val, range_val, cb) ->
     @_validate_args null, hash_val, range_val, cb
     cond = @_get_cond null, hash_val, range_val
@@ -106,8 +103,9 @@ class Model
       [field, cb] = [range_val, field]
     opts = {}
     opts[field] = 1
+    self = @
     @ddb.incr @table, cond, opts, {}, (err, res) ->
-      cb err, res?[field] || null
+      cb?.call self, err, res?[field] || null
   putx: (hash_val, range_val, data, cb) -> 
     @_validate_args null, hash_val, range_val, cb
     cond = @_get_cond null, hash_val, range_val

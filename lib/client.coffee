@@ -15,11 +15,12 @@ class Client
     for k in keys
       params.Expected[k] = {Exists: false}
     merge params, ops
+    self = @
     @ddb.putItem params, (err, data) ->
       if err
-        cb? err
+        cb?.call self, err
       else
-        cb? null, if data.Attributes then \
+        cb?.call self, null, if data.Attributes then \
           ddb2o data.Attributes else {}
 
   # insert if not exist, update if exist
@@ -35,11 +36,12 @@ class Client
     params.Key = o2ddb key
     params.AttributesToGet = attrs if attrs
     params.ConsistentRead = true if consistent
+    self = @
     @ddb.getItem params, (err, data) ->
       if err
-        cb? err
+        cb?.call self, err
       else
-        cb? null, data.Item && ddb2o data.Item || null
+        cb?.call self, null, data.Item && ddb2o data.Item || null
 
   count: (table, cond, ops, cb) ->
     ops.Select = 'COUNT'
@@ -56,11 +58,12 @@ class Client
     params.ExclusiveStartKey = ops.start_key if ops.start_key
     params.ScanIndexForward = ops.desc if ops.desc
     params.ConsistentRead = ops.consistent if ops.consistent
+    self = @
     @ddb.query params, (err, data) ->
       if err
-        cb? err
+        cb?.call self, err
       else
-        cb? null, data.Items.map (x) -> ddb2o(x)
+        cb?.call self, null, data.Items.map (x) -> ddb2o(x)
 
   scan_count: (table, cond, ops, cb) ->
     ops.Select = 'COUNT'
@@ -74,22 +77,24 @@ class Client
     params.AttributesToGet = attrs if attrs
     params.Limit = ops.limit if ops.limit
     params.ExclusiveStartKey = ops.start_key if ops.start_key
+    self = @
     @ddb.scan params, (err, data) ->
       if err
-        cb? err
+        cb?.call self, err
       else
-        cb? null, data.Items.map (x) -> ddb2o(x)
+        cb?.call self, null, data.Items.map (x) -> ddb2o(x)
 
   del: (table, key, ops, cb) ->
     params = {}
     params.TableName = table
     params.Key = o2ddb key
     merge params, ops
+    self = @
     @ddb.deleteItem params, (err, data) ->
       if err
-        cb? err
+        cb?.call self, err
       else
-        cb? null, if data.Attributes then \
+        cb?.call self, null, if data.Attributes then \
           ddb2o data.Attributes else {}
 
   # update if exist, error if not exist
@@ -109,11 +114,12 @@ class Client
         Value: ddbtype(v)
         Action: 'PUT'
     merge params, ops
+    self = @
     @ddb.updateItem params, (err, data) ->
       if err
-        cb? err
+        cb?.call self, err
       else
-        cb? null, if data.Attributes then \
+        cb?.call self, null, if data.Attributes then \
           ddb2o data.Attributes else {}
 
   # usage: incr(tb, {xx:1}, {yy:-1})
@@ -187,7 +193,14 @@ class Client
       for d in data
         (ri[tb] ||= []).push {DeleteRequest : {Key: o2ddb(d)} }
     merge params, ops
-    @ddb.batchWriteItem params, cb
+    self = @
+    @ddb.batchWriteItem params, (err, res) ->
+      if err
+        cb?.call self, err
+      else if res.UnprocessedItems
+        process.nextTick self.ddb.batchWriteItem(res.UnprocessedItems, cb)
+      else
+        cb?.call self, null, res
     
 
   # RequestItems: {tb1: {Keys: [], AttributesToGet: [], ConsistentRead: true}
