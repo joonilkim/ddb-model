@@ -177,7 +177,7 @@ class Client
 
   # toputs: tb: [{xx:1,yy:2}], tb2: []
   # todels: tb: [{xx:1,yy:2}], tb2: []
-  batch: (puts, dels, ops, cb) ->
+  batch: (toputs, todels, ops, cb) ->
     params = {RequestItems: {}}
     ri = params.RequestItems
     for tb, data of toputs
