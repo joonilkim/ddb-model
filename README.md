@@ -117,3 +117,27 @@ product.create {name: "iphone", created_at: now(), location: 'seoul'}, (err) ->
 
 ```
   
+* 현재시간부터 현재시간-24시간.. 역순
+
+```
+query_after 현재시간-24시간, -1, desc
+```
+
+* 최근 n개.. 역순
+
+```
+query_before 현재시간, n, desc
+```
+
+* t시간이전꺼 n개.. 역순
+
+```
+query_before t, n, desc
+```
+
+* 오래된거 n개.. 오래된순..
+
+```
+query_before 현재시간, n, asc
+```
+

@@ -52,9 +52,9 @@ class Client
     params.KeyConditions = o2ddb_cond(cond)
     params.AttributesToGet = attrs if attrs
     params.IndexName = ops.index if ops.index
-    params.Limit = ops.limit if ops.limit
+    params.Limit = ops.limit if ops.limit && ops.limit > 0
     params.ExclusiveStartKey = ops.start_key if ops.start_key
-    params.ScanIndexForward = ops.asc if ops.asc
+    params.ScanIndexForward = ops.desc if ops.desc
     params.ConsistentRead = ops.consistent if ops.consistent
     @ddb.query params, (err, data) ->
       if err
