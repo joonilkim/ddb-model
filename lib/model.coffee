@@ -37,21 +37,21 @@ class Model
     opts = index: index_name, limit: n, desc: desc
     @ddb.query @table, cond, null, opts, (err, data) ->
       cb?(err, data?[0] || null)
-  query_before: (hash_val, range_val, n, cb) ->
+  query_before: (hash_val, range_val, n, desc, cb) ->
     if typeof desc == 'function'
       cb = desc; desc = false
     cond = {}
     cond[@keys[0]] = {EQ: [hash_val]}
     cond[@keys[1]] = {LT: [range_val]}
     @_query cond, n, desc, cb
-  query_after: (hash_val, range_val, n, cb) ->
+  query_after: (hash_val, range_val, n, desc, cb) ->
     if typeof desc == 'function'
       cb = desc; desc = false
     cond = {}
     cond[@keys[0]] = {EQ: [hash_val]}
     cond[@keys[1]] = {GT: [range_val]}
     @_query cond, n, desc, cb
-  query_latest: (hash_val, cb) ->
+  query_latest: (hash_val, desc, cb) ->
     if typeof desc == 'function'
       cb = desc; desc = false
     cond = {}
