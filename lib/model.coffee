@@ -7,14 +7,14 @@ class Model
       cb = desc; desc = false
     cond = {}
     cond[@keys[0]] = {EQ: [hash_val]}
-    @_query cond, n, desc, cb 
+    @_query cond, n || -1, desc, cb 
   query_by: (index_name, hash_val, n, desc, cb) ->
     if typeof desc == 'function'
       cb = desc; desc = false
     index = @indexes[index_name]
     cond = {}
     cond[index[0]] = {EQ: [hash_val]}
-    opts = index: index_name, limit: n, desc: desc
+    opts = index: index_name, limit: (n || -1), desc: desc
     @ddb.query @table, cond, null, opts, (err, data) ->
       cb?(err, data?[0] || null)
   query_before_by: (index_name, hash_val, range_val, n, desc, cb) ->
@@ -24,7 +24,7 @@ class Model
     cond = {}
     cond[index[0]] = {EQ: [hash_val]}
     cond[index[1]] = {LT: [range_val]}
-    opts = index: index_name, limit: n, desc: desc
+    opts = index: index_name, limit: (n || -1), desc: desc
     @ddb.query @table, cond, null, opts, (err, data) ->
       cb?(err, data?[0] || null)
   query_after_by: (index_name, hash_val, range_val, n, desc, cb) ->
@@ -34,7 +34,7 @@ class Model
     cond = {}
     cond[index[0]] = {EQ: [hash_val]}
     cond[index[1]] = {GT: [range_val]}
-    opts = index: index_name, limit: n, desc: desc
+    opts = index: index_name, limit: (n || -1), desc: desc
     @ddb.query @table, cond, null, opts, (err, data) ->
       cb?(err, data?[0] || null)
   query_before: (hash_val, range_val, n, desc, cb) ->
@@ -43,14 +43,14 @@ class Model
     cond = {}
     cond[@keys[0]] = {EQ: [hash_val]}
     cond[@keys[1]] = {LT: [range_val]}
-    @_query cond, n, desc, cb
+    @_query cond, n || -1, desc, cb
   query_after: (hash_val, range_val, n, desc, cb) ->
     if typeof desc == 'function'
       cb = desc; desc = false
     cond = {}
     cond[@keys[0]] = {EQ: [hash_val]}
     cond[@keys[1]] = {GT: [range_val]}
-    @_query cond, n, desc, cb
+    @_query cond, n || -1, desc, cb
   query_latest: (hash_val, desc, cb) ->
     if typeof desc == 'function'
       cb = desc; desc = false
@@ -61,7 +61,7 @@ class Model
   _query: (cond, n, desc, cb) ->
     if @keys.length != 2
       return cb?(new Error "This table has no range key")
-    ops = limit: n, desc: desc
+    ops = limit: (n || -1), desc: desc
     @ddb.query @table, cond, null, ops, cb
   _validate_args: (index, hash_val, range_val, cb) ->
     keys = index || @keys
