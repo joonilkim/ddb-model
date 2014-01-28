@@ -79,6 +79,7 @@ class Model
     cond[index[0]] = {EQ: [hash_val]}
     cond[index[1]] = {EQ: [range_val]} if index.length == 2
     opts = index: index_name, limit: 1
+    self = @
     @ddb.query @table, cond, null, opts, (err, data) ->
       cb ||= range_val
       cb?.call self, err, data?[0] || null
