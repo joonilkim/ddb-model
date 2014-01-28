@@ -199,7 +199,7 @@ class Client
         cb?.call self, err
       else if res.UnprocessedItems
         params = RequestItems: res.UnprocessedItems
-        process.nextTick self.ddb.batchWriteItem(params, cb)
+        process.nextTick (-> @ddb.batchWriteItem(params, cb)).bind(self)
       else
         cb?.call self, null, res
     
