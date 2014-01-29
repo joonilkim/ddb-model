@@ -8,12 +8,13 @@ class Model
     cond = {}
     cond[@keys[0]] = {EQ: [hash_val]}
     @_query cond, n || -1, desc, cb 
-  query_by: (index_name, hash_val, n, desc, cb) ->
+  query_by: (index_name, hash_val, range_val, n, desc, cb) ->
     if typeof desc == 'function'
       cb = desc; desc = false
     index = @indexes[index_name]
     cond = {}
     cond[index[0]] = {EQ: [hash_val]}
+    cond[index[1]] = {EQ: [range_val]} if range_val
     opts = index: index_name, limit: (n || -1), desc: desc
     @ddb.query @table, cond, null, opts, cb
   query_before_by: (index_name, hash_val, range_val, n, desc, cb) ->
