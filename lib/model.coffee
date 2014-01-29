@@ -72,11 +72,11 @@ class Model
     cond[keys[1]] = range_val if keys.length == 2
     cond
   get_by: (index_name, hash_val, range_val, cb) ->
-    if range_val == 'function'
+    if typeof range_val == 'function'
       [cb, range_val] = [range_val, null]
     @_get_by(index_name, hash_val, range_val, null, cb)
   cget_by: (index_name, hash_val, range_val, cb) ->
-    if range_val == 'function'
+    if typeof range_val == 'function'
       [cb, range_val] = [range_val, null]
     ops = consistent: true 
     @_get_by(index_name, hash_val, range_val, ops, cb)
