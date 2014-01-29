@@ -72,15 +72,24 @@ class Model
     cond[keys[1]] = range_val if keys.length == 2
     cond
   get_by: (index_name, hash_val, range_val, cb) ->
+    if range_val == 'function'
+      [cb, range_val] = [range_val, null]
+    @_get_by(index_name, hash_val, range_val, null, cb)
+  cget_by: (index_name, hash_val, range_val, cb) ->
+    if range_val == 'function'
+      [cb, range_val] = [range_val, null]
+    ops = consistent: true 
+    @_get_by(index_name, hash_val, range_val, ops, cb)
+  _get_by: (index_name, hash_val, range_val, ops, cb) ->
     index = @indexes[index_name]
-    @_validate_args index, hash_val, range_val, cb
     cond = {}
     cond[index[0]] = {EQ: [hash_val]}
-    cond[index[1]] = {EQ: [range_val]} if index.length == 2
-    opts = index: index_name, limit: 1
+    cond[index[1]] = {EQ: [range_val]} if range_val
+    ops ||= {}
+    ops.index = index_name
+    ops.limit = 1
     self = @
-    @ddb.query @table, cond, null, opts, (err, data) ->
-      cb = range_val if typeof range_val == 'function'
+    @ddb.query @table, cond, null, ops, (err, data) ->
       cb?.call self, err, data?[0] || null
   get: (hash_val, range_val, cb) ->
     @_validate_args null, hash_val, range_val, cb
