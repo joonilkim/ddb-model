@@ -56,8 +56,10 @@ class Client
     params.IndexName = ops.index if ops.index
     params.Limit = ops.limit if ops.limit && ops.limit > 0
     params.ExclusiveStartKey = ops.start_key if ops.start_key
-    params.ScanIndexForward = ops.desc if ops.desc
-    params.ConsistentRead = ops.consistent if ops.consistent
+    ops.desc ||= false
+    params.ScanIndexForward = !ops.desc
+    ops.consistent ||= false
+    params.ConsistentRead = ops.consistent
     self = @
     @ddb.query params, (err, data) ->
       if err
